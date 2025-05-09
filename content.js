@@ -7,12 +7,24 @@ function containsChineseCharacters(text) {
 function resizeChineseText(element, fontSize) {
   if (element.nodeType === Node.TEXT_NODE) {
     if (containsChineseCharacters(element.nodeValue)) {
+      // Skip if parent is an input element or form control
+      const parent = element.parentNode;
+      if (parent && (
+          parent.tagName === 'INPUT' || 
+          parent.tagName === 'TEXTAREA' || 
+          parent.tagName === 'SELECT' ||
+          parent.contentEditable === 'true' ||
+          parent.isContentEditable
+      )) {
+        return;
+      }
+
       // If the parent is already styled by us, don't apply again
-      if (element.parentNode && !element.parentNode.hasAttribute('data-chinese-text-resizer')) {
+      if (parent && !parent.hasAttribute('data-chinese-text-resizer')) {
         const span = document.createElement('span');
         span.setAttribute('data-chinese-text-resizer', 'true');
         span.style.fontSize = fontSize + 'px';
-        element.parentNode.replaceChild(span, element);
+        parent.replaceChild(span, element);
         span.appendChild(element);
       }
     }
@@ -20,7 +32,12 @@ function resizeChineseText(element, fontSize) {
     // Skip elements we've already processed or that shouldn't be modified
     if (element.hasAttribute('data-chinese-text-resizer') || 
         element.tagName === 'SCRIPT' || 
-        element.tagName === 'STYLE') {
+        element.tagName === 'STYLE' ||
+        element.tagName === 'INPUT' ||
+        element.tagName === 'TEXTAREA' ||
+        element.tagName === 'SELECT' ||
+        element.contentEditable === 'true' ||
+        element.isContentEditable) {
       return;
     }
     
